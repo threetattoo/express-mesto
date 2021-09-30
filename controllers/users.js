@@ -54,14 +54,16 @@ const updateProfile = (req, res) => {
       runValidators: true,
       new: true,
     })
-    .then((user) => res.send({ data: user }))
-    .catch((err) => {
-      if (err.name === 'CastError') {
+    .then((user) => {
+      if (!user) {
         res.status(404).send({ message: 'Пользователь с переданным _id не найден' });
         return;
       }
-      if (err.name === 'ValidationError') {
-        res.status(400).send({ message: 'Переданы некорректные данные при обновлении профиля' });
+      res.status(200).send({ data: user });
+    })
+    .catch((err) => {
+      if (err.name === 'CastError' || err.name === 'ValidationError') {
+        res.status(400).send({ message: 'Переданы некорректные данные' });
         return;
       }
       res.status(500).send({ message: 'На сервере произошла ошибка' });
@@ -75,14 +77,16 @@ const updateAvatar = (req, res) => {
       runValidators: true,
       new: true,
     })
-    .then((user) => res.send({ data: user }))
-    .catch((err) => {
-      if (err.name === 'CastError') {
+    .then((user) => {
+      if (!user) {
         res.status(404).send({ message: 'Пользователь с переданным _id не найден' });
         return;
       }
-      if (err.name === 'ValidationError') {
-        res.status(400).send({ message: 'Передан некорректный _id для обновления аватара' });
+      res.status(200).send({ data: user });
+    })
+    .catch((err) => {
+      if (err.name === 'CastError' || err.name === 'ValidationError') {
+        res.status(400).send({ message: 'Переданы некорректные данные' });
         return;
       }
       res.status(500).send({ message: 'На сервере произошла ошибка' });
