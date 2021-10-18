@@ -6,9 +6,6 @@ const ForbiddenError = require('../errors/forbidden-error');
 const getCards = (req, res, next) => {
   Card.find({})
     .then((cards) => {
-      if (cards.length === 0) {
-        throw new NotFoundError('Карточки не найдены');
-      }
       res.status(200).send(cards);
     })
     .catch(next);
@@ -24,6 +21,8 @@ const createCard = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'ValidationError') {
         throw new IncorrectDataError('Произошла ошибка при валидации');
+      } else {
+        next(err);
       }
     })
     .catch(next);
@@ -64,6 +63,8 @@ const likeCard = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'CastError') {
         throw new IncorrectDataError('Передан некорректный _id для установки лайка');
+      } else {
+        next(err);
       }
     })
     .catch(next);
@@ -84,6 +85,8 @@ const dislikeCard = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'CastError') {
         throw new IncorrectDataError('Передан некорректный _id для снятия лайка');
+      } else {
+        next(err);
       }
     })
     .catch(next);

@@ -11,10 +11,7 @@ const NotFoundError = require('../errors/not-found-error');
 const getUsers = (req, res, next) => {
   User.find({})
     .then((users) => {
-      if (users.length === 0) {
-        throw new NotFoundError('Пользователи не найдены');
-      }
-      res.status(200).send({ data: users });
+      res.status(200).send(users);
     })
     .catch(next);
 };
@@ -30,6 +27,8 @@ const getCurrentUser = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'CastError') {
         throw new IncorrectDataError('Передан некорректный _id пользователя');
+      } else {
+        next(err);
       }
     })
     .catch(next);
@@ -46,6 +45,8 @@ const getUserById = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'CastError') {
         throw new IncorrectDataError('Передан некорректный _id пользователя');
+      } else {
+        next(err);
       }
     })
     .catch(next);
@@ -60,7 +61,13 @@ const createUser = (req, res, next) => {
       name, about, avatar, email, password: hash,
     }))
     .then((user) => {
-      res.status(200).send({ data: user });
+      res.status(200).send({
+        name: user.name,
+        about: user.about,
+        avatar: user.avatar,
+        email: user.email,
+        _id: user._id,
+      });
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
@@ -68,6 +75,8 @@ const createUser = (req, res, next) => {
       }
       if (err.code === 11000) {
         throw new ExistingDataError(`Пользователь с таким email: ${req.body.email} существует`);
+      } else {
+        next(err);
       }
     })
     .catch(next);
@@ -89,6 +98,8 @@ const updateProfile = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
         throw new IncorrectDataError('Переданы некорректные данные');
+      } else {
+        next(err);
       }
     })
     .catch(next);
@@ -110,6 +121,8 @@ const updateAvatar = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
         throw new NotFoundError('Переданы некорректные данные');
+      } else {
+        next(err);
       }
     })
     .catch(next);
@@ -124,12 +137,9 @@ const login = (req, res, next) => {
         NODE_ENV === 'production' ? JWT_SECRET : 'some-secret-key',
         { expiresIn: '7d' },
       );
-      res.status(200).send({ token });
+      res.cookie('jwt', token, { maxAge: 3600000 * 24 * 7, httpOnly: true, sameSite: true }).end();
     })
-    .catch(() => {
-      throw new AuthorizationError('Передан некорректный логин или пароль');
-    })
-    .catch(next);
+    .catch(() => next(new AuthorizationError('Передан некорректный логин или пароль')));
 };
 
 module.exports = {

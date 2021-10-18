@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const { errors, celebrate, Joi } = require('celebrate');
+const cookieParser = require('cookie-parser');
 const NotFoundError = require('./errors/not-found-error');
 const cardsRoutes = require('./routes/cards');
 const usersRoutes = require('./routes/users');
@@ -17,6 +18,7 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
   useNewUrlParser: true,
 });
 
+app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
