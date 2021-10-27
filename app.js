@@ -8,7 +8,7 @@ const cardsRoutes = require('./routes/cards');
 const usersRoutes = require('./routes/users');
 const auth = require('./middlewares/auth');
 const { login, createUser } = require('./controllers/users');
-
+const { requestLogger, errorLogger } = require('./middlewares/logger');
 // Слушаем 3000 порт
 const { PORT = 3000 } = process.env;
 
@@ -21,6 +21,14 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+app.use(requestLogger);
+
+app.get('/crash-test', () => {
+  setTimeout(() => {
+    throw new Error('Сервер сейчас упадёт');
+  }, 0);
+});
 
 app.post('/signin', celebrate({
   body: Joi.object().keys({
@@ -47,6 +55,8 @@ app.use('/', auth, usersRoutes);
 app.use('*', () => {
   throw new NotFoundError('Ресурс не найден');
 });
+
+app.use(errorLogger);
 
 app.use(errors());
 
